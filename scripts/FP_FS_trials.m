@@ -39,6 +39,13 @@ freq_bands = {
 num_freq_bands = size(freq_bands,1);
 
 n_order = 10;
+orders = linspace(10,400,n_order)/2;
+
+% setup time indexing
+times2saveidx = dsearchn(EEG.times',times2save');
+
+% convert orders from ms to timepoints
+orders = round( orders/(1000/EEG.srate) );
 
 % Load the files
 parfor file_no = 1:length(fullfile_List)
@@ -56,15 +63,8 @@ parfor file_no = 1:length(fullfile_List)
     % Get capacity values
     capacityvals = cellfun(@(x) str2double(x{:}(end-1)),eventtypes)';
 
-    % setup time indexing
-    times2saveidx = dsearchn(EEG.times',times2save');
-
-    % convert orders from ms to timepoints
-    orders = linspace(10,400,n_order)/2;
-    orders = round(orders/(1000/EEG.srate));
-
     [tfhz,tfpw]  = deal(zeros(EEG.nbchan,num_freq_bands,length(times2save), EEG.trials));
-
+    tic
     % loop through frequency bands
     for fi=1:num_freq_bands
         
@@ -140,7 +140,8 @@ parfor file_no = 1:length(fullfile_List)
     capacities{file_no} = capacityvals;
 
     fprintf('\nFrequencies slided for %s file\n',save_name);
-    fprintf('Files %d of %d completed\n', file_no, length(fullfile_List));  
+    fprintf('Files %d of %d completed\n', file_no, length(fullfile_List));    
+    toc
 
 end
 
@@ -158,26 +159,3 @@ save('tfhz_sliders.mat','master_slider_data', '-v7.3');
 save('wmload_sequence.mat', 'capacities');
 
 save('tfpw_powers.mat','master_power_data', '-v7.3');
-
-%% Rounded matrix
-rounded_power = cellfun(@(x) round(x, 4), master_power_data, 'UniformOutput', false);
-rounded_sliding = cellfun(@(x) round(x, 4), master_slider_data, 'UniformOutput', false);
-
-save('tfhz_sliders_rounded.mat','rounded_sliding', '-v7.3');
-save('tfpw_powers_rounded.mat','rounded_power', '-v7.3');
-
-%% Calculate trimmed means across third dimensions (time series)
-
-% Example: 10% trimming from both tails
-trim_percent = 20;  % Total percent to trim (e.g., 15% from each end)
-
-trimmed_means_sliding = cellfun(@(x) squeeze(trimmean(x, trim_percent, 3)), master_slider_data, 'UniformOutput', false);
-trimmed_means_power = cellfun(@(x) squeeze(trimmean(x, trim_percent, 3)), master_power_data, 'UniformOutput', false);
-
-% Round off to 4 decimal places
-rounded_power = cellfun(@(x) round(x, 4), trimmed_means_power, 'UniformOutput', false);
-rounded_sliding = cellfun(@(x) round(x, 4), trimmed_means_sliding, 'UniformOutput', false);
-
-% Save them
-save('tfhz_sliders_rounded.mat','rounded_sliding', '-v7.3');
-save('tfpw_powers_rounded.mat','rounded_power', '-v7.3');
