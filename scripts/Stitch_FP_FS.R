@@ -1,5 +1,5 @@
 # Compiling images to a single large image
-# author @ Rahul Venugopal 06.05.2022
+# author @ Rahul Venugopal 19.04.2026
 
 # Loading libraries
 library(magick)
@@ -11,28 +11,23 @@ images_list <- list.files(pattern = "*.png")
 imgs <- image_read(images_list)
 
 # Find grid size automagically
-no_of_cols <- ceiling(length(imgs)/6)
+no_of_cols <- 3
 
-no_of_rows <- floor(length(imgs)/6)
+no_of_rows <- 1
 
 # Set the layout
-imgs <- c(imgs[1:6],
-          imgs[7:12],
-          imgs[13:18],
-          imgs[19:24],
-          imgs[25:30],
-          imgs[31:36])
+imgs <- c(imgs[1:3])
 
 # tile it
 stitched <- image_montage(imgs,
-                          tile = '6x6', # layout of grid cols*rows
+                          tile = '3x1', # layout of grid cols*rows
                           # size of individual thumbnail and spacing
                           # Horizontal gap
                           # Vertical gap
-                          geometry = "x600+5+5") # size of individual thumbnail and spacing
+                          geometry = "x1500+5+5") # size of individual thumbnail and spacing
 
 # saving the images
-image_write(stitched,path = "stiched_FS_Alpha.png",
+image_write(stitched,path = "stiched_alpha_theta_exp.png",
             quality = 100, # no compression
             density = 900, #dpi
             format = "png")
